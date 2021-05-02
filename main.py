@@ -6,7 +6,6 @@ from webcam import webcam
 import pandas as pd
 import streamlit as st
 import easyocr
-import cv2
 import numpy as np
 
 STYLE = """
