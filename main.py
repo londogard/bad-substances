@@ -1,15 +1,13 @@
-try:
- 
-    from enum import Enum
-    from io import BytesIO, StringIO
-    from typing import Union
-    from webcam import webcam
- 
-    import pandas as pd
-    import streamlit as st
-    import easyocr
-    import cv2
-    import numpy as np
+from enum import Enum
+from io import BytesIO, StringIO
+from typing import Union
+from webcam import webcam
+
+import pandas as pd
+import streamlit as st
+import easyocr
+import cv2
+import numpy as np
     
 except Exception as e:
     print(e)
