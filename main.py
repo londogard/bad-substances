@@ -7,53 +7,46 @@ import pandas as pd
 import streamlit as st
 import easyocr
 import numpy as np
+from util import get_bad_words
+from util import print_bad_subtances
+from util import getReader
+from inputText import InputText
+from photo import Photo
+from camera import Camera
 
-STYLE = """
-<style>
-img {
-    max-width: 100%;
-}
-</style>
+
+
+
+ 
+st.markdown(
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">',
+    unsafe_allow_html=True,
+)
+query_params = st.experimental_get_query_params()
+tabs = ["Input Text", "Camera", "Photo"]
+if "tab" in query_params:
+    active_tab = query_params["tab"][0]
+else:
+    active_tab = "Input Text"
+
+if active_tab not in tabs:
+    st.experimental_set_query_params(tab="Input Text")
+    active_tab = "Input Text"
+
+li_items = "".join(
+    f"""
+    <li class="nav-item">
+        <a class="nav-link{' active' if t==active_tab else ''}" href="/?tab={t}">{t}</a>
+    </li>
+    """
+    for t in tabs
+)
+tabs_html = f"""
+    <ul class="nav nav-tabs">
+    {li_items}
+    </ul>
 """
 
-@st.cache(allow_output_mutation=True)
-def getReader():
-    return easyocr.Reader(['sv'], gpu = False)
- 
-hormor_storande = ['Benzophenone-1',
-'Benzophenone-3',
-'BHA',
-'BHT',
-'Butylparaben',
-'Cyclomethicone',
-'Cyclotetrasiloxane',
-'Dimethylcyclosiloxane',
-'Ethylhexyl methoxycinnamate',
-'Propylparaben',
-'Resorcinol',
-'Triclosan',
-'Triphenyl Phosphate']
-plast = ['Acrylate/Styrene copolymer',
-'Polyethylene',
-'Polymethyl methacrylate',
-'Polyethylene terephthalate',
-'Nylon']
-maybe_cancer = [
-'Cyclotetrasiloxane',
-'PHMB',
-'Polyaminopropyl biguanide',
-'p-Aminophenol',
-]
-pfas = [
-'PTFE',
-'Polytef',
-'Polytefum',
-'C9-15 Fluoroalcohol phosphate',
-'C8-18 Fluoroalcohol phosphate',
-'Decafluoropentane'
-]
-pfas_include = ['perfluoro']
- 
 class FileUpload(object):
  
     def __init__(self):
@@ -101,26 +94,27 @@ class FileUpload(object):
  
 
 
-def get_bad_words(substances):
-    all_words = [res.lower() for res in (hormor_storande + plast + maybe_cancer + pfas + pfas_include)]
-    ingredientes = [res.lower() for res in substances]
-    print("substances", substances)
-    print("Ingredients", ingredientes)
-    bad_substances = []
-    for ingredient in ingredientes:
-        for x in [danger for danger in all_words if danger in ingredient]:
-            bad_substances.append(x)
-    return bad_substances
 
-def print_bad_subtances(bad_substances):
-    if bad_substances:
-        st.text("Your table of contents include substances that are not recommended: ")
-        for substance in bad_substances:
-            st.text(substance)
-    else:
-        st.text("We can't find any substance that is not recommended.")
 
-if __name__ ==  "__main__":
-    reader = getReader()
-    helper = FileUpload()
+st.markdown(tabs_html, unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
+
+if active_tab == "Input Text":
+    helper = InputText()
     helper.run()
+    
+elif active_tab == "Camera":
+    helper = Camera()
+    helper.run()
+elif active_tab == "Photo":
+    helper = Photo()
+    helper.run()
+else:
+    st.text("Something went wrong")
+    
+    
+
+
+
+
+   
