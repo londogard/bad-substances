@@ -8,9 +8,6 @@ import streamlit as st
 import easyocr
 import cv2
 import numpy as np
-    
-except Exception as e:
-    print(e)
 
 STYLE = """
 <style>
