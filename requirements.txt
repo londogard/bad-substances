@@ -6,3 +6,4 @@ streamlit==0.80.0
 streamlit-webcam-example==0.1.0
 torch==1.8.1
 torchvision==0.9.1
+logger==1.4
