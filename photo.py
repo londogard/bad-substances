@@ -17,7 +17,7 @@ class Photo(object):
     def __init__(self):
         self.fileTypes = ["csv", "png", "jpg"]
  
-    def run(self):
+    def write(self):
         st.info(__doc__)
         st.markdown(STYLE, unsafe_allow_html=True)
         file = st.file_uploader("Upload file", type=self.fileTypes)

@@ -15,7 +15,7 @@ img {
 
 class Camera(object):
  
-    def run(self):
+    def write(self):
         captured_image = webcam()
 
         if captured_image and isinstance(captured_image, BytesIO):
