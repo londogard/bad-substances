@@ -1,83 +1,44 @@
-from enum import Enum
-from io import BytesIO, StringIO
-from typing import Union
-from webcam import webcam
-
-import pandas as pd
 import streamlit as st
+
 import easyocr
-import numpy as np
-from util import get_bad_words
-from util import print_bad_subtances
-from util import getReader
-from inputText import InputText
-from photo import Photo
-from camera import Camera
-import awesome_streamlit as ast
+from util import bad_substances
 
-#st.markdown(
-#    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">',
-#    unsafe_allow_html=True,
-#)
-##query_params = st.experimental_get_query_params()
-#tabs = ["Input Text", "Camera", "Photo"]
-#active_tab =""
-#if not active_tab:
-#    active_tab = "Input Text"
-#
-#if active_tab not in tabs:
-#    st.experimental_set_query_params(tab="Input Text")
-#    active_tab = "Input Text"
-#
-#li_items = "".join(
-#    f"""
-#    <li class="nav-item">
-#        <a class="nav-link{' active' if t==active_tab else ''}" href="/?tab={t}">{t}</a>
-#    </li>
-#    """
-#    for t in tabs
-#)
-#tabs_html = f"""
-#    <ul class="nav nav-tabs">
-#    {li_items}
-#    </ul>
-#"""
-#
-#st.markdown(tabs_html, unsafe_allow_html=True)
-#st.markdown("<br>", unsafe_allow_html=True)
-#
-#if active_tab == "Input Text":
-#    helper = InputText()
-#    helper.run()
-#    
-#elif active_tab == "Camera":
-#    helper = Camera()
-#    helper.run()
-#elif active_tab == "Photo":
-#    helper = Photo()
-#    helper.run()
-#else:
-#    st.text("Something went wrong")
 
-PAGES = {
-    "Home": InputText(),
-    "Resources": Camera(),
-    "Gallery": Photo()
-}
+@st.cache
+def get_easyocr():
+    reader = easyocr.Reader(["en"])
+    return reader
+
 
 def main():
     """Main function of the App"""
-    st.sidebar.title("Navigation")
-    selection = st.sidebar.radio("Go to", list(PAGES.keys()))
+    ocr = get_easyocr()
 
-    page = PAGES[selection]
+    st.header("Bad Substances - Find your enemies!")
+    mode = st.radio("Select Mode", ["Image-file", "Text", "Camera"])
+    img, text = None, None
+    if mode == "Camera":
+        img = st.camera_input("Camera Input!")
+    elif mode == "Image-file":
+        img = st.file_uploader("Input Image(s)")
+    elif mode == "Text":
+        text = st.text_area("Insert text")
 
-    with st.spinner(f"Loading {selection} ..."):
-        ast.shared.components.write_page(page)
+    if img is not None:
+        data = ocr.readtext(img.getvalue())
+        text = [x[1] for x in data]  # TODO save and display bbox
+        text = " ".join(text)
+        st.image(img, width=300)
+
+    if text:
+        text = text.replace(",", " ").lower()
+        text = text.split(" ")
+
+        bad = set(text).intersection(bad_substances)
+        if len(bad):
+            st.write(f"**Bad Substances Found:** {', '.join(bad)}")
 
 
 if __name__ == "__main__":
     main()
-
-
-   
+    # TODO potentially look at symspellpy or something similar for close edits.
