@@ -26,7 +26,9 @@ def main():
 
     if img is not None:
         data = ocr.readtext(img.getvalue())
-        text = [x[1] for x in data]  # TODO save and display bbox
+        text = [
+            x[1] for x in data
+        ]  # TODO save and display bbox, in [0]. Score is in [2]
         text = " ".join(text)
         st.image(img, width=300)
 
