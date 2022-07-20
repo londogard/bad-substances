@@ -1,55 +1,14 @@
-hormor_storande = [
-    "Benzophenone-1",
-    "Benzophenone-3",
-    "BHA",
-    "BHT",
-    "Butylparaben",
-    "Cyclomethicone",
-    "Cyclotetrasiloxane",
-    "Dimethylcyclosiloxane",
-    "Ethylhexyl methoxycinnamate",
-    "Propylparaben",
-    "Resorcinol",
-    "Triclosan",
-    "Triphenyl Phosphate",
-]
-plast = [
-    "Acrylate/Styrene copolymer",
-    "Polyethylene",
-    "Polymethyl methacrylate",
-    "Polyethylene terephthalate",
-    "Nylon",
-]
-maybe_cancer = [
-    "Cyclotetrasiloxane",
-    "PHMB",
-    "Polyaminopropyl biguanide",
-    "p-Aminophenol",
-]
-pfas = [
-    "PTFE",
-    "Polytef",
-    "Polytefum",
-    "benzyl",
-    "C9-15 Fluoroalcohol phosphate",
-    "C8-18 Fluoroalcohol phosphate",
-    "Decafluoropentane",
-    "Polyteym",
-    "Perfluoroktansulfonat",
-    "Perfluoroktansyra",
-    "Ammonium C6-16 Perfluoroalkylethyl phosphate",
-    "Polyperfluoroethoxymethoxy difluoroethyl PEG phosphate",
-    "Polyperfluoromethylisopropyl ether",
-    "Perfluorononyl dimethicone",
-    "Dimetichonol Fluoralcohol dilinoleic acid",
-    "Trifluoropropyl dimethicol",
-    "Octafluoropentyl methacrylate",
-]
-pfas_include = ["perfluoro", "polyfluoro"]
+from __future__ import annotations
+import json
 
-bad_substances = set(
-    [
-        res.lower()
-        for res in (hormor_storande + plast + maybe_cancer + pfas + pfas_include)
-    ]
-)
+
+# reverse dict to retrieve risk/family/use..
+# get set of data
+def get_bad_substances() -> set[str]:
+    bad_substances_full = json.load("chemicals.json")
+    bad_substances = set()
+    for family in bad_substances_full:
+        substances = [x.lower() for x in family["substances"]]
+        bad_substances.update(substances)
+
+    return bad_substances
