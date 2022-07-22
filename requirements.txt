@@ -3,5 +3,8 @@ numpy==1.20.2
 # opencv-python==4.5.1.48
 streamlit>=1.10.0
 logger==1.4
-"doctr[tf]">=1.9.0
+python-doctr
 fastapi>=0.75.2
+protobuf==3.20.1
+symspellpy>=6.7.6
+# sudo apt-get install ffmpeg libsm6 libxext6 -y

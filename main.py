@@ -32,50 +32,51 @@ def predict_texts(data: list[ndarray]):
 
 
 @st.experimental_memo(ttl=TWO_HOURS)
-def visualize_result(result, data):
-    fig = visualize_page(result.pages[0].export(), data[0], interactive=False)
-    return st.pyplot(fig)
+def visualize_result(result, _data):
+    for i in range(len(result["pages"])):
+        fig = visualize_page(result["pages"][i], _data[i], interactive=False)
+    return fig
 
 
 def main():
     """Main function of the App"""
     st.header("Bad Substances - Find your enemies!")
-    mode = st.radio("Select Mode", ["Image-file", "Text", "Camera"])
+    c1, c2 = st.columns(2)
+    with c1:
+        mode = st.radio("Select Mode", ["Image-file", "Text", "Camera"])
     img, text = None, None
-    if mode == "Camera":
-        img = st.camera_input("Camera Input!")
-    elif mode == "Image-file":
-        img = st.file_uploader("Input Image(s)")
-    elif mode == "Text":
-        text = st.text_area("Insert text")
+    with c2:
+        if mode == "Camera":
+            img = st.camera_input("Camera Input!")
+        elif mode == "Image-file":
+            img = st.file_uploader("Input Image(s)")
+        elif mode == "Text":
+            text = st.text_area("Insert text")
 
     bad_substances = get_bad_substances()
 
-    # st.write(bad_substances)
     if img is not None:
-        data = read_files(img.getvalue())
-        data = predict_texts(data)
+        imgs = read_files(img.getvalue())
+        data = predict_texts(imgs)
         result_json = data.export()
-        st.write(result_json)
+        
         words = []
         for i in range(len(data.pages)):
             for block in result_json["pages"][i]["blocks"]:
-                for line in block["lines"]:
-                    for word in line["words"]:
-                        words.append(word["value"])  # Dropping confidence etc..
+                for line in block["lines"]:  # Dropping confidence etc..
+                    line["words"] = [word for word in line["words"] if word["value"].lower() in bad_substances]
+                    words += [word["value"].lower() for word in line["words"]]
 
         bad = set(words).intersection(bad_substances)
         if len(bad):
-            st.write(f"**Bad Substances Found:** {', '.join(bad)}")
-        else:
-            st.write("LGTM")
-        # st.write(result_json["pages"][i])
+            c1,c2 = st.columns([1,2])
+            bad_list = '\n- '.join(bad)
+            c1.write(f"**Bad Substances Found:**  \n{bad_list}")
+            fig = visualize_result(result_json, imgs)
+            c2.pyplot(fig)
 
-        # text = [
-        #    x[1] for x in data
-        # ]  # TODO save and display bbox, in [0]. Score is in [2]
-        # text = " ".join(text)
-        # st.image(img, width=300)
+        else:
+            st.write("**No Bad Substances Found**")
 
     if text:
         text = text.replace(",", " ").lower()
@@ -87,4 +88,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
     # TODO potentially look at symspellpy or something similar for close edits.
