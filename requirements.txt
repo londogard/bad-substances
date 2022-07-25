@@ -7,4 +7,5 @@ python-doctr
 fastapi>=0.75.2
 protobuf==3.20.1
 symspellpy>=6.7.6
+torch==1.11.0
 # sudo apt-get install ffmpeg libsm6 libxext6 -y
