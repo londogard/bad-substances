@@ -8,8 +8,9 @@ from doctr.models.predictor import OCRPredictor
 from doctr.utils.visualization import visualize_page
 
 from numpy import ndarray
+from symspellpy import SymSpell, Verbosity
 
-from util import get_bad_substances
+from util import get_bad_substances, retrieve_best_guess
 
 TWO_HOURS = 60 * 60 * 2
 
@@ -38,10 +39,19 @@ def visualize_result(result, _data):
     return fig
 
 
+@st.experimental_memo
+def get_symspell():
+    symspell = SymSpell(max_dictionary_edit_distance=3, count_threshold=0)
+    for word in get_bad_substances():
+        symspell.create_dictionary_entry(word, 1)
+    return symspell
+
+
 def main():
     """Main function of the App"""
     st.header("Bad Substances - Find your enemies!")
     c1, c2 = st.columns(2)
+
     with c1:
         mode = st.radio("Select Mode", ["Image-file", "Text", "Camera"])
     img, text = None, None
@@ -54,24 +64,34 @@ def main():
             text = st.text_area("Insert text")
 
     bad_substances = get_bad_substances()
+    symspell = get_symspell()
 
     if img is not None:
         imgs = read_files(img.getvalue())
         data = predict_texts(imgs)
         result_json = data.export()
-        
+
         words = []
         for i in range(len(data.pages)):
             for block in result_json["pages"][i]["blocks"]:
                 for line in block["lines"]:  # Dropping confidence etc..
-                    line["words"] = [word for word in line["words"] if word["value"].lower() in bad_substances]
-                    words += [word["value"].lower() for word in line["words"]]
+                    potential_words = [
+                        retrieve_best_guess(word["value"].lower(), symspell)
+                        for word in line["words"]
+                    ]
+                    words += [x for x in potential_words if x is not None]
+                    kept_words = set([x.word for x in potential_words if x is not None])
+                    line["words"] = [
+                        word
+                        for word in line["words"]
+                        if word["value"].lower() in kept_words
+                    ]
 
-        bad = set(words).intersection(bad_substances)
-        if len(bad):
-            c1,c2 = st.columns([1,2])
-            bad_list = '\n- '.join(bad)
-            c1.write(f"**Bad Substances Found:**  \n{bad_list}")
+        if len(words):
+            c1, c2 = st.columns([1, 2])
+            bad_list = "\n\n".join([str(w) for w in words])
+            c1.write("### Bad Substances Found:")
+            c1.write(bad_list)
             fig = visualize_result(result_json, imgs)
             c2.pyplot(fig)
 
