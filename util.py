@@ -65,7 +65,17 @@ def retrieve_best_guess(word: str, symspell: SymSpell) -> Result | None:
 
 def split_to_words(text: str) -> list[str]:
     words = text.replace(",", " ").lower()
-    words = text.split(" ")
-    words = [t for t in words if len(t)]
+    words = words.split(" ")
+    words = [t.strip() for t in words if len(t)]
 
     return words
+
+
+def prune_img_json(img_json: dict, to_keep: set[str]) -> dict:
+    for block in img_json["blocks"]:
+        for line in block["lines"]:
+            line["words"] = [
+                word for word in line["words"] if word["value"].lower() in to_keep
+            ]
+
+    return img_json
