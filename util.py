@@ -1,7 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import json
-from typing import Any
 import streamlit as st
 from symspellpy import SymSpell, Verbosity
 
@@ -27,8 +26,6 @@ class SubstanceInfo:
         return f"**{self.term}** ({self.family}):  {info}"
 
 
-# reverse dict to retrieve risk/family/use..
-# get set of data
 @st.experimental_memo
 def get_bad_substances() -> set[str]:
     with open("chemicals.json") as f:
@@ -64,3 +61,21 @@ def retrieve_best_guess(word: str, symspell: SymSpell) -> Result | None:
         )
 
     return None
+
+
+def split_to_words(text: str) -> list[str]:
+    words = text.replace(",", " ").lower()
+    words = words.split(" ")
+    words = [t.strip() for t in words if len(t)]
+
+    return words
+
+
+def prune_img_json(img_json: dict, to_keep: set[str]) -> dict:
+    for block in img_json["blocks"]:
+        for line in block["lines"]:
+            line["words"] = [
+                word for word in line["words"] if word["value"].lower() in to_keep
+            ]
+
+    return img_json
