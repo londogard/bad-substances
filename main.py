@@ -64,11 +64,12 @@ def sponsor_section():
 
 
 def main():
-    """Main function of the App"""
     img, words = None, None
 
     sponsor_section()
-    st.header("Bad Substances - Find your enemies!")
+    st.header("Cosmetic Checker")
+    st.subheader("Is your cosmetic safe?")
+    
     c1, c2 = st.columns(2)
     with c1:
         mode = st.radio("Select Mode", ["Image-file", "Text", "Camera"])
